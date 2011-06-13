@@ -38,7 +38,7 @@ _MULTIPLE_WILDCARD_RE = re.compile(r'\*+')
 # http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior
 
 # divisions smaller than a day and time zones; always converted to *
-_TIME_FIELDS = 'fHIpSXzZ'
+_TIME_FIELDS = 'fHIMpSXzZ'
 
 _DAY_OF_WEEK_FIELDS = 'aAw'
 
@@ -80,10 +80,14 @@ _MONTH_GLOB_FIELDS = (_TIME_FIELDS +
                      _DAY_OF_MONTH_FIELDS)
 
 # fields that preclude globbing even if we have all days in a month
-_MONTH_BAD_FIELDS = (_DAY_OF_YEAR_FIELDS +
-                    _SUNDAY_WEEK_OF_YEAR_FIELDS +
-                    _MONDAY_WEEK_OF_YEAR_FIELDS)
+_MONTH_BAD_FIELDS = (_WHOLE_DATE_FIELDS +
+                     _DAY_OF_YEAR_FIELDS +
+                     _DAY_OF_WEEK_FIELDS +
+                     _SUNDAY_WEEK_OF_YEAR_FIELDS +
+                     _MONDAY_WEEK_OF_YEAR_FIELDS)
 
+# date to use when we just want strftime
+_DUMMY_DATE = datetime.date(1900, 1, 1)
 
 def strftime(dates, format):
     """Format a sequence of dates, using globs when possible.
@@ -104,7 +108,7 @@ def strftime(dates, format):
     if not dates:
         return []
     elif not _STRFTIME_FIELD_RE.match(format):
-        return [format]
+        return [_DUMMY_DATE.strftime(format)]
 
     results = set()
 
@@ -126,7 +130,8 @@ def strftime(dates, format):
 
     # everything else
     for day in dates:
-        results.add(day.strftime(format))
+        day_glob = _glob_fields(format, _TIME_FIELDS)
+        results.add(day.strftime(day_glob))
 
     return sorted(results)
     
@@ -173,7 +178,7 @@ def _extract_full_years(dates):
     other_dates = set()
 
     for year, dates in year_to_dates.iteritems():
-        year_len = 365 + (1 if calendar.isleap(year) else 0)
+        year_len = 365 + int(calendar.isleap(year))
         if len(dates) >= year_len:
             full_years.add(year)
         else:
