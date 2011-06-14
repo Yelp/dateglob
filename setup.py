@@ -23,7 +23,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Topic :: Utilities',
     ],
-    description='Use globs to represent sets of dates compactly',
+    description='Convert a set of dates into a compact list of globs.',
     license='Apache',
     long_description=open('README.rst').read(),
     name='dateglob',

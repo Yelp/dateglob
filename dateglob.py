@@ -11,13 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Convert a set of dates to a compact list of globs, using strftime() format.
+"""Convert a set of dates into a compact list of globs. For example:
 
-This library was designed for a specific use case, which was to express the
-paths to several months of log files using as few globs as possible, so as
-not to bump up against limits on maximum length of a command line.
+>>> import dateglob; from datetime import date, timedelta
+>>> # build list of dates from 2009-12-31 thru 2011-02-01
+>>> dates = [date(2009, 12, 31) + timedelta(i) for i in xrange(1+365+31+1)]
+>>> dateglob.strftime(dates, '%Y-%m-%d')
+['2009-12-31', '2010-*-*', '2011-01-*', '2011-02-01']
 
-You may find it useful for other tasks as well!
+The original use case for this library was to generate compact command lines
+for command that take daily log files as input, for example:
+
+>>> args += dateglob.strftime(dates, '/logs/foo/%Y/%m/%d/*.gz')
+
+
 """
 import calendar
 from collections import defaultdict
@@ -89,20 +96,22 @@ _MONTH_BAD_FIELDS = (_WHOLE_DATE_FIELDS +
 # date to use when we just want strftime
 _DUMMY_DATE = datetime.date(1900, 1, 1)
 
+
 def strftime(dates, format):
-    """Format a sequence of dates, using globs when possible.
+    """Format a sequence of dates, using ``*`` when possible.
 
-    For example, if *dates* contained all days in June 2011, and
-    *format* were ``'%Y/%m/%d'``, we could return ``['2011/06/*']``
+    For example, if *dates* contains all days in June 2011, and
+    *format* is ``'%Y/%m/%d'``, we return ``['2011/06/*']``
 
-    Divisions smaller than a day (e.g. ``%H``) are always converted to ``*``.
+    Divisions smaller than a day (e.g. ``%H``) and time zone fields
+    (e.g. ``%Z``) are always converted to ``*``.
 
-    Currently, we only do something special if we have all days in a month
-    or a year (we don't handle week-in-year globbing).
+    Currently, we only do something special with full months and years
+    (we don't glob weeks).
 
-    :param dates: a sequence of :py:class:`datetime.date`s
-    :param format: a :py:func:`~datetime.date.strftime` format string
-    :rtype: list of str
+    :param dates: a sequence of :py:class:`datetime.date` objects
+    :param format: a :py:func:`~datetime.date.strftime` format string (see http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior)
+    :return: a list of strings corresponding to strftime-formatted dates, using ``*`` wherever possible. These will be distinct (no duplicates) and in alphabetical order.
     """
     # handle special cases quickly
     if not dates:

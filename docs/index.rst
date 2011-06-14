@@ -1,0 +1,5 @@
+dateglob
+=================================
+
+.. automodule:: dateglob
+    :members:
