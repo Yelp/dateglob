@@ -4,6 +4,7 @@ dateglob
 ``dateglob`` converts a set of dates into a list of globs. For example:
 
 >>> import dateglob; from datetime import date, timedelta
+>>> # build list of dates from 2009-12-31 thru 2011-02-01
 >>> dates = [date(2009, 12, 31) + timedelta(i) for i in xrange(1+365+31+1)]
 >>> dateglob.strftime(dates, '%Y-%m-%d')
 ['2009-12-31', '2010-*-*', '2011-01-*', '2011-02-01']
