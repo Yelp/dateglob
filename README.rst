@@ -19,4 +19,4 @@ full months and years (we don't glob weeks).
 
 * source: <http://github.com/Yelp/dateglob>
 * documentation: <http://packages.python.org/dateglob/>
-
+* strftime: <http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior>
