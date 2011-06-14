@@ -37,6 +37,9 @@ class TestStrftime(TestCase):
     def test_non_strftime_format(self):
         assert_equal(strftime(y(2010), 'foo'), ['foo'])
 
+        # don't look at dates at all if it's not a format string
+        assert_equal(strftime([object()], 'foo'), ['foo'])
+
     def test_month_globbing(self):
         assert_equal(strftime(m(2010, 6), '%Y-%m-%d'), ['2010-06-*'])
 
@@ -122,10 +125,12 @@ class TestStrftime(TestCase):
 
     def test_percent_escaping(self):
         assert_equal(strftime(y(2011), '110%%'), ['110%'])
-        # invalid strftime format string
+
+        # don't incorrectly grab % out of %% to do globbing
+        assert_equal(strftime(y(2011), '%m %%m %%%m'), ['* %m %*'])
+
+        # catch invalid strftime string
         assert_raises(ValueError, strftime, y(2011), '110%')
-
-
 
 
 if __name__ == '__main__':

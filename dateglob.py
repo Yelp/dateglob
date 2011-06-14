@@ -23,78 +23,77 @@ The original use case for this library was to generate compact command lines
 for command that take daily log files as input, for example:
 
 >>> args += dateglob.strftime(dates, '/logs/foo/%Y/%m/%d/*.gz')
-
-
 """
 import calendar
 from collections import defaultdict
 import datetime
 import re
 
+
 __author__ = 'David Marin <dave@yelp.com>'
 
 __version__ = '0.1'
 
+__all__ = ['strftime']
+
+
 # match directives in a strftime format string (e.g. '%Y-%m-%d')
-_STRFTIME_FIELD_RE = re.compile('%(.)')
+STRFTIME_FIELD_RE = re.compile('%(.)')
 
 # used to compact multiple adjacent wildcards into a single wildcard.
-_MULTIPLE_WILDCARD_RE = re.compile(r'\*+')
+MULTIPLE_WILDCARD_RE = re.compile(r'\*+')
 
 # all fields handled by the default version of strftime; see
 # http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior
 
 # divisions smaller than a day and time zones; always converted to *
-_TIME_FIELDS = 'fHIMpSXzZ'
+TIME_FIELDS = 'fHIMpSXzZ'
 
-_DAY_OF_WEEK_FIELDS = 'aAw'
+DAY_OF_WEEK_FIELDS = 'aAw'
 
-_DAY_OF_MONTH_FIELDS = 'd'
+DAY_OF_MONTH_FIELDS = 'd'
 
-_DAY_OF_YEAR_FIELDS = 'j'
+DAY_OF_YEAR_FIELDS = 'j'
 
 # week number in year, with weeks starting on Sunday
-_SUNDAY_WEEK_OF_YEAR_FIELDS = 'U'
+SUNDAY_WEEK_OF_YEAR_FIELDS = 'U'
 
 # week number in year, with weeks starting on Monday
-_MONDAY_WEEK_OF_YEAR_FIELDS = 'W'
+MONDAY_WEEK_OF_YEAR_FIELDS = 'W'
 
 # month names and numbers
-_MONTH_FIELDS = 'bBm'
+MONTH_FIELDS = 'bBm'
 
-_YEAR_FIELDS = 'yY'
+YEAR_FIELDS = 'yY'
 
 # fields that describe the whole date at once (make globbing impossible)
-_WHOLE_DATE_FIELDS = 'cx'
+WHOLE_DATE_FIELDS = 'cx'
 
 # The "%%" format; always leave these alone
-_LITERAL_FIELDS = '%'
+LITERAL_FIELDS = '%'
 
 # fields that can be replaced with * if we have all days in a year
-_YEAR_GLOB_FIELDS = (_TIME_FIELDS +
-                    _DAY_OF_WEEK_FIELDS +
-                    _DAY_OF_MONTH_FIELDS +
-                    _DAY_OF_YEAR_FIELDS +
-                    _SUNDAY_WEEK_OF_YEAR_FIELDS +
-                    _MONDAY_WEEK_OF_YEAR_FIELDS +
-                    _MONTH_FIELDS)
+YEAR_GLOB_FIELDS = (TIME_FIELDS +
+                    DAY_OF_WEEK_FIELDS +
+                    DAY_OF_MONTH_FIELDS +
+                    DAY_OF_YEAR_FIELDS +
+                    SUNDAY_WEEK_OF_YEAR_FIELDS +
+                    MONDAY_WEEK_OF_YEAR_FIELDS +
+                    MONTH_FIELDS)
 
 # fields that preclude globbing even if we have all days in a year
-_YEAR_BAD_FIELDS = _WHOLE_DATE_FIELDS
+YEAR_BAD_FIELDS = WHOLE_DATE_FIELDS
 
 # fields that can be replaced with * if we have all days in a month
-_MONTH_GLOB_FIELDS = (_TIME_FIELDS +
-                     _DAY_OF_MONTH_FIELDS)
+MONTH_GLOB_FIELDS = (TIME_FIELDS +
+                     DAY_OF_MONTH_FIELDS)
 
 # fields that preclude globbing even if we have all days in a month
-_MONTH_BAD_FIELDS = (_WHOLE_DATE_FIELDS +
-                     _DAY_OF_YEAR_FIELDS +
-                     _DAY_OF_WEEK_FIELDS +
-                     _SUNDAY_WEEK_OF_YEAR_FIELDS +
-                     _MONDAY_WEEK_OF_YEAR_FIELDS)
-
-# date to use when we just want strftime
-_DUMMY_DATE = datetime.date(1900, 1, 1)
+MONTH_BAD_FIELDS = (WHOLE_DATE_FIELDS +
+                     DAY_OF_YEAR_FIELDS +
+                     DAY_OF_WEEK_FIELDS +
+                     SUNDAY_WEEK_OF_YEAR_FIELDS +
+                     MONDAY_WEEK_OF_YEAR_FIELDS)
 
 
 def strftime(dates, format):
@@ -116,36 +115,38 @@ def strftime(dates, format):
     # handle special cases quickly
     if not dates:
         return []
-    elif not _STRFTIME_FIELD_RE.match(format):
-        return [_DUMMY_DATE.strftime(format)]
+    elif not '%' in format:
+        # don't use STRFTIME_FIELD_RE to check because we want to catch
+        # malformed format strings as well.
+        return [format]
 
     results = set()
 
     # year globbing
-    if not _has_fields(format, _YEAR_BAD_FIELDS):
-        full_years, dates = _extract_full_years(dates)
+    if not has_fields(format, YEAR_BAD_FIELDS):
+        full_years, dates = extract_full_years(dates)
         if full_years:
-            year_glob = _glob_fields(format, _YEAR_GLOB_FIELDS)
+            year_glob = glob_fields(format, YEAR_GLOB_FIELDS)
             for year in full_years:
                 results.add(datetime.date(year, 1, 1).strftime(year_glob))
 
     # month globbing
-    if not _has_fields(format, _MONTH_BAD_FIELDS):
-        full_months, dates = _extract_full_months(dates)
+    if not has_fields(format, MONTH_BAD_FIELDS):
+        full_months, dates = extract_full_months(dates)
         if full_months:
-            month_glob = _glob_fields(format, _MONTH_GLOB_FIELDS)
+            month_glob = glob_fields(format, MONTH_GLOB_FIELDS)
             for year, month in full_months:
                 results.add(datetime.date(year, month, 1).strftime(month_glob))
 
     # everything else
     for day in dates:
-        day_glob = _glob_fields(format, _TIME_FIELDS)
+        day_glob = glob_fields(format, TIME_FIELDS)
         results.add(day.strftime(day_glob))
 
     return sorted(results)
     
 
-def _has_fields(format, fields):
+def has_fields(format, fields):
     """Check a format string for fields of a given type.
 
     :param format: a :py:func:`~datetime.date.strftime` format string
@@ -153,10 +154,10 @@ def _has_fields(format, fields):
     :param fields: one-character field types to look for
     :rtype: bool
     """
-    return bool(set(_STRFTIME_FIELD_RE.findall(format)) & set(fields))
+    return bool(set(STRFTIME_FIELD_RE.findall(format)) & set(fields))
 
 
-def _glob_fields(format, fields):
+def glob_fields(format, fields):
     """Replace fields in a format string with ``*``. Adjacent stars (`**`)
     will be merged into a single star.
 
@@ -165,14 +166,14 @@ def _glob_fields(format, fields):
     :param fields: one-character field types to replace with ``*``
     :rtype: bool
     """
-    format = _STRFTIME_FIELD_RE.sub(
+    format = STRFTIME_FIELD_RE.sub(
         lambda m: '*' if m.group(1) in fields else m.group(0),
         format)
-    format = _MULTIPLE_WILDCARD_RE.sub('*', format)
+    format = MULTIPLE_WILDCARD_RE.sub('*', format)
     return format
 
 
-def _extract_full_years(dates):
+def extract_full_years(dates):
     """Find if there are any years where every day of the year is in *dates*.
 
     Returns ``full_years, other_dates``: *years* is a list of year
@@ -196,7 +197,7 @@ def _extract_full_years(dates):
     return sorted(full_years), sorted(other_dates)
 
 
-def _extract_full_months(dates):
+def extract_full_months(dates):
     """Find if there are any years where every day of the year is in *dates*.
 
     Returns ``full_months, other_dates``: *months* is a list of tuples
@@ -218,4 +219,3 @@ def _extract_full_months(dates):
             other_dates.update(dates)
 
     return sorted(full_months), sorted(other_dates)
-
