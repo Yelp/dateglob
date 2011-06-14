@@ -2,7 +2,7 @@ Source: dateglob
 Section: python
 Priority: extra
 Maintainer: David Marin <dave@yelp.com>
-Build-Depends: cdbs, debhelper (>= 5), python-support (>= 0.5.3), python-central (>= 0.5.6)
+Build-Depends: cdbs, debhelper (>= 5), python-support (>= 1.0)
 XS-Python-Version: >=2.5
 Standards-Version: 3.7.2
 
