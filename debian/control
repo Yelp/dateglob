@@ -1,0 +1,14 @@
+Source: dateglob
+Section: python
+Priority: extra
+Maintainer: David Marin <dave@yelp.com>
+Build-Depends: cdbs, debhelper (>= 5), python-support (>= 1.0)
+XS-Python-Version: >=2.5
+Standards-Version: 3.7.2
+
+Package: python-dateglob
+Architecture: any
+Homepage: http://packages.python.org/dateglob/
+XB-Python-Version: ${python:Versions}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Convert a set of dates into a compact list of globs
