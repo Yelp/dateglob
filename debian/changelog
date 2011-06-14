@@ -1,5 +1,5 @@
-mrjob (0.1) unstable; urgency=low
+dateglob (0.1) unstable; urgency=low
 
-  * See CHANGES.txt
+  * Initial packaging
 
  -- David Marin <dave@yelp.com>  Mon, 13 Jun 2011 17:27:14 -0700
