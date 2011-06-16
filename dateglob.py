@@ -115,7 +115,10 @@ def strftime(dates, format):
     # handle special cases quickly
     if not dates:
         return []
-    elif not '%' in format:
+
+    assert isinstance(format, str), 'Argument "format" must be a string'
+
+    if not '%' in format:
         # don't use STRFTIME_FIELD_RE to check because we want to catch
         # malformed format strings as well.
         return [format]
