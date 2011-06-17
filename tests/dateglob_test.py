@@ -31,8 +31,12 @@ class TestStrftime(TestCase):
         assert_equal(strftime((), '%Y-%m-%d'), [])
 
     def test_empty_with_bad_format(self):
-        # don't look at format string if no dates
-        assert_equal(strftime([], object()), [])
+        # Type check all the time even if simple edge case
+        assert_raises(TypeError, strftime, [], object())
+
+    def test_nonempty_with_bad_format(self):
+        # don't let the user pass in the wrong sorts of args
+        assert_raises(TypeError, strftime, 'swapped-%Y', y(2010))
 
     def test_non_strftime_format(self):
         assert_equal(strftime(y(2010), 'foo'), ['foo'])
@@ -50,7 +54,7 @@ class TestStrftime(TestCase):
                      [date(2010, 6, 1).strftime('%B *, 2010')])
 
     def test_month_no_globbing(self):
-    	# can't glob day-of-year (%j)
+        # can't glob day-of-year (%j)
         assert_equal(strftime(m(2010, 6), '%Y-%j'),
                      [d.strftime('%Y-%j') for d in m(2010, 6)])
         
