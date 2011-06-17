@@ -114,7 +114,7 @@ def strftime(dates, format):
     """
     # handle special cases quickly
     if not isinstance(format, str):
-        msg = 'Argument "format" must be a string (was %s)' % str(format)
+        msg = 'Argument "format" must be a string (was %r)' % (format,)
         raise TypeError(msg)
 
     if not dates:
