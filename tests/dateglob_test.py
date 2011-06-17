@@ -133,7 +133,7 @@ class TestStrftime(TestCase):
         # don't incorrectly grab % out of %% to do globbing
         assert_equal(strftime(y(2011), '%m %%m %%%m'), ['* %m %*'])
 
-        # don't replace other people's custom escape sequences
+        # don't replace other people's custom directives
         assert_equal(strftime(y(2011), '%Y%L'), ['2011%L'])
 
         # catch invalid strftime string
