@@ -31,8 +31,8 @@ class TestStrftime(TestCase):
         assert_equal(strftime((), '%Y-%m-%d'), [])
 
     def test_empty_with_bad_format(self):
-        # don't look at format string if no dates
-        assert_equal(strftime([], object()), [])
+        # Type check all the time even if simple edge case
+        assert_raises(TypeError, strftime, [], object())
 
     def test_nonempty_with_bad_format(self):
         # don't let the user pass in the wrong sorts of args

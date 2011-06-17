@@ -113,14 +113,13 @@ def strftime(dates, format):
     :return: a list of strings corresponding to strftime-formatted dates, using ``*`` wherever possible. These will be distinct (no duplicates) and in alphabetical order.
     """
     # handle special cases quickly
-    if not dates:
-        return []
-
     if not isinstance(format, str):
         msg = 'Argument "format" must be a string (was %s)' % str(format)
         raise TypeError(msg)
 
-    if not '%' in format:
+    if not dates:
+        return []
+    elif not '%' in format:
         # don't use STRFTIME_FIELD_RE to check because we want to catch
         # malformed format strings as well.
         return [format]
