@@ -15,7 +15,7 @@ for command that take daily log files as input, for example:
 >>> args += dateglob.strftime(dates, '/logs/foo/%Y/%m/%d/*.gz')
 
 ``dateglob.strftime()`` handles all of the standard arguments to ``datetime.strftime()``. Currently, it only does something special with
-full months and years (we don't glob weeks).
+full months, years, and full ten-day periods (we don't glob weeks).
 
 * source: <http://github.com/Yelp/dateglob>
 * documentation: <http://packages.python.org/dateglob/>

@@ -30,9 +30,9 @@ import datetime
 import re
 
 
-__author__ = 'David Marin <dave@yelp.com>'
+__author__ = 'David Marin <dave@yelp.com>, Patrick Boocock <pboocock@jawbone.com>'
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 __all__ = ['strftime']
 
@@ -105,8 +105,8 @@ def strftime(dates, format):
     Divisions smaller than a day (e.g. ``%H``) and time zone fields
     (e.g. ``%Z``) are always converted to ``*``.
 
-    Currently, we only do something special with full months and years
-    (we don't glob weeks).
+    Currently, we only do something special with full months, years, and full
+    ten-day periods (we don't glob weeks).
 
     :param dates: a sequence of :py:class:`datetime.date` objects
     :param format: a :py:func:`~datetime.date.strftime` format string (see http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior)
@@ -138,17 +138,23 @@ def strftime(dates, format):
             for year, month in full_months:
                 results.add(datetime.date(year, month, 1).strftime(month_glob))
 
+    # tens globbing
+    full_tens, dates = extract_full_tens(dates)
+    if full_tens:
+        for year, month, ten in full_tens:
+            tens_glob = glob_fields(format, MONTH_GLOB_FIELDS, str(ten))
+            results.add(datetime.date(year, month, 1).strftime(tens_glob))
+
     # everything else
     for day in dates:
         day_glob = glob_fields(format, TIME_FIELDS)
         results.add(day.strftime(day_glob))
 
     return sorted(results)
-    
+
 
 def has_fields(format, fields):
     """Check a format string for fields of a given type.
-
     :param format: a :py:func:`~datetime.date.strftime` format string
     :type fields: str
     :param fields: one-character field types to look for
@@ -157,17 +163,19 @@ def has_fields(format, fields):
     return bool(set(STRFTIME_FIELD_RE.findall(format)) & set(fields))
 
 
-def glob_fields(format, fields):
+def glob_fields(format, fields, day_str=''):
     """Replace fields in a format string with ``*``. Adjacent stars (`**`)
     will be merged into a single star.
 
     :param format: a :py:func:`~datetime.date.strftime` format string
     :type fields: str
     :param fields: one-character field types to replace with ``*``
+    :type day_str: str
+    :param day_str: can be substituted with ten-day period prefix as str
     :rtype: bool
     """
     format = STRFTIME_FIELD_RE.sub(
-        lambda m: '*' if m.group(1) in fields else m.group(0),
+        lambda m: '%s*' % day_str if m.group(1) in fields else m.group(0),
         format)
     format = MULTIPLE_WILDCARD_RE.sub('*', format)
     return format
@@ -219,3 +227,53 @@ def extract_full_months(dates):
             other_dates.update(dates)
 
     return sorted(full_months), sorted(other_dates)
+
+
+def extract_full_tens(dates):
+    """
+    Find if there are any series of dates containing a full range of ten
+    dates in *dates*, e.g. 2016-01-0* 2016-01-1* 2016-01-2* 2016-01-3*.
+
+    :type dates: list
+    :param dates: list of dates to find ten-day periods in.
+    :return full_tens: a set of dates that can be globbed into ten-day periods
+    :return other_dates: remaining dates that cannot be globbed
+    """
+    ten_to_dates = defaultdict(set)
+
+    for d in dates:
+        ten_to_dates[(d.year, d.month, which_ten(d))].add(d)
+
+    full_tens = set()
+    other_dates = set()
+
+    for (year, month, ten), dates in ten_to_dates.iteritems():
+        if len(dates) >= 9:
+            full_tens.add((year, month, ten))
+        elif ten == 3:
+            full_tens.add((year, month, ten))
+        else:
+            other_dates.update(dates)
+
+    return sorted(full_tens), sorted(other_dates)
+
+
+def which_ten(d):
+    """
+    Determine which ten-day period a date falls in.
+
+    :type d: datetime.date
+    :param d: day of date, e.g. 2016-01-02 in format %Y-%m-%d is 2
+    :return: an integer that is the prefix of the relevant ten-day period.
+    """
+    if not 32 > d.day > 0:
+        raise RuntimeError('Out of range date')
+
+    if d.day < 10:
+        return 0
+    elif d.day < 20:
+        return 1
+    elif d.day < 30:
+        return 2
+    else:
+        return 3
