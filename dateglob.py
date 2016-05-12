@@ -32,7 +32,7 @@ import re
 
 __author__ = 'David Marin <dave@yelp.com>, Patrick Boocock <pboocock@jawbone.com>'
 
-__version__ = '0.2'
+__version__ = '0.2.dev0'
 
 __all__ = ['strftime']
 
@@ -95,6 +95,12 @@ MONTH_BAD_FIELDS = (WHOLE_DATE_FIELDS +
                      SUNDAY_WEEK_OF_YEAR_FIELDS +
                      MONDAY_WEEK_OF_YEAR_FIELDS)
 
+TEN_LENGTH = {
+    0: 9,
+    1: 10,
+    2: 10
+}
+
 
 def strftime(dates, format):
     """Format a sequence of dates, using ``*`` when possible.
@@ -139,11 +145,12 @@ def strftime(dates, format):
                 results.add(datetime.date(year, month, 1).strftime(month_glob))
 
     # tens globbing
-    full_tens, dates = extract_full_tens(dates)
-    if full_tens:
-        for year, month, ten in full_tens:
-            tens_glob = glob_fields(format, MONTH_GLOB_FIELDS, str(ten))
-            results.add(datetime.date(year, month, 1).strftime(tens_glob))
+    if not has_fields(format, MONTH_BAD_FIELDS):
+        full_tens, dates = extract_full_tens(dates)
+        if full_tens:
+            for year, month, ten in full_tens:
+                tens_glob = glob_fields(format, MONTH_GLOB_FIELDS, day_str=str(ten))
+                results.add(datetime.date(year, month, 1).strftime(tens_glob))
 
     # everything else
     for day in dates:
@@ -248,9 +255,12 @@ def extract_full_tens(dates):
     other_dates = set()
 
     for (year, month, ten), dates in ten_to_dates.iteritems():
-        if len(dates) >= 9:
+        mr = calendar.monthrange(year, month)[1]
+        if ten < 3 and len(dates) == TEN_LENGTH[ten]:
             full_tens.add((year, month, ten))
-        elif ten == 3:
+        elif ten == 3 and len(dates) == mr - 30 + 1:  # Handle 30+ days
+            full_tens.add((year, month, ten))
+        elif month == 2 and ten == 2 and len(dates) == mr - 20 + 1:  # Handle February
             full_tens.add((year, month, ten))
         else:
             other_dates.update(dates)
@@ -266,7 +276,7 @@ def which_ten(d):
     :param d: day of date, e.g. 2016-01-02 in format %Y-%m-%d is 2
     :return: an integer that is the prefix of the relevant ten-day period.
     """
-    if not 32 > d.day > 0:
+    if not calendar.monthrange(d.year, d.month)[1] >= d.day > 0:
         raise RuntimeError('Out of range date')
 
     if d.day < 10:
