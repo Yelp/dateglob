@@ -13,7 +13,7 @@ except ImportError:
 
 setup(
     author='David Marin',
-    author_email='dave@yelp.com',
+    author_email='dm@davidmarin.org',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
