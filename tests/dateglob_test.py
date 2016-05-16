@@ -24,6 +24,14 @@ def y(year):
         d += timedelta(1)
 
 
+def t(year, month, day, period=11):
+    """Return a list of days in the given year"""
+    d = date(year, month, day)
+    for i in range(period):
+        yield d
+        d += timedelta(1)
+
+
 class TestStrftime(TestCase):
 
     def test_empty(self):
@@ -53,7 +61,7 @@ class TestStrftime(TestCase):
     	# can't glob day-of-year (%j)
         assert_equal(strftime(m(2010, 6), '%Y-%j'),
                      [d.strftime('%Y-%j') for d in m(2010, 6)])
-        
+
         # can't glob day-of-week (%a, %A, %W)
         assert_equal(strftime(m(2010, 6), '%Y-%a'),
                      sorted(set(d.strftime('%Y-%a') for d in m(2010, 6))))
@@ -61,13 +69,13 @@ class TestStrftime(TestCase):
                      sorted(set(d.strftime('%Y-%A') for d in m(2010, 6))))
         assert_equal(strftime(m(2010, 6), '%Y-%w'),
                      sorted(set(d.strftime('%Y-%w') for d in m(2010, 6))))
-        
+
         # can't glob whole date (%c, %x)
         assert_equal(strftime(m(2010, 6), '%c'),
                      sorted(d.strftime('%c') for d in m(2010, 6)))
         assert_equal(strftime(m(2010, 6), '%x'),
                      sorted(d.strftime('%x') for d in m(2010, 6)))
-        
+
     def test_year_globbing(self):
         assert_equal(strftime(y(2010), '%Y-%m-%d'), ['2010-*-*'])
         assert_equal(strftime(y(2010), '%b %d, %Y'), ['* *, 2010'])
@@ -87,6 +95,37 @@ class TestStrftime(TestCase):
         assert_equal(strftime(y(2010), '%x'),
                      sorted(d.strftime('%x') for d in y(2010)))
 
+    def test_ten_globbing(self):
+        # Test first ten
+        assert_equal(strftime(t(2016, 5, 1), '%Y-%m-%d'),
+                     ['2016-05-0*', '2016-05-10', '2016-05-11'])
+        # Test second ten
+        assert_equal(strftime(t(2016, 5, 10), '%Y-%m-%d'),
+                     ['2016-05-1*', '2016-05-20'])
+        # Test third ten
+        assert_equal(strftime(t(2016, 5, 20), '%Y-%m-%d'),
+                     ['2016-05-2*', '2016-05-30'])
+
+        # Test fourth ten on 30-day month
+        assert_equal(strftime(t(2016, 4, 30, period=2), '%Y-%m-%d'),
+                     ['2016-04-3*', '2016-05-01'])
+        # Test fourth ten on 31-day month with all days
+        assert_equal(strftime(t(2016, 1, 30, period=2), '%Y-%m-%d'),
+                     ['2016-01-3*'])
+        # Test fourth ten on 31-day month with one of the 2 days
+        assert_equal(strftime(t(2016, 1, 30, period=1), '%Y-%m-%d'),
+                     ['2016-01-30'])
+        # Test fourth ten on 31-day month with one of the 2 days
+        assert_equal(strftime(t(2016, 1, 31, period=1), '%Y-%m-%d'),
+                     ['2016-01-31'])
+
+        # Test February of Leap Year
+        assert_equal(strftime(t(2016, 2, 20, period=10), '%Y-%m-%d'),
+                     ['2016-02-2*'])
+        # Test February of Normal Year
+        assert_equal(strftime(t(2015, 2, 20, period=9), '%Y-%m-%d'),
+                     ['2015-02-2*'])
+
     def test_readme(self):
         # good test of a range of dates
         dates = [date(2009, 12, 31) + timedelta(i) for i in xrange(1+365+31+1)]
@@ -105,7 +144,7 @@ class TestStrftime(TestCase):
 
         # sorting is just alphabetical, not by date
         assert_equal(strftime(dates, '%m/%d/%y'),
-                     ['*/*/11', '05/06/07', '06/06/10', '07/*/07'])        
+                     ['*/*/11', '05/06/07', '06/06/10', '07/*/07'])
 
     def test_no_duplicates(self):
         dates = [date(2010, 6, 6)] * 10000
