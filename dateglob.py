@@ -30,9 +30,13 @@ import datetime
 import re
 
 
-__author__ = 'David Marin <dave@yelp.com>, Patrick Boocock <pboocock@jawbone.com>'
+__author__ = 'David Marin <dave@yelp.com>'
 
-__version__ = '0.2.dev0'
+__credits__ = [
+    'Patrick Boocock <pboocock@jawbone.com>'
+]
+
+__version__ = '0.2'
 
 __all__ = ['strftime']
 
