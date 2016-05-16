@@ -1,9 +1,15 @@
+import dateglob
+
 try:
     from setuptools import setup
+    setup  # shh, pyflakes
+
+    setuptools_kwargs = {
+        'test_suite': 'tests'
+    }
 except ImportError:
     from distutils.core import setup
-
-import dateglob
+    setuptools_kwargs = {}
 
 setup(
     author='David Marin',
@@ -16,9 +22,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.3',
-        'Programming Language :: Python :: 2.4',
-        'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Topic :: Utilities',
@@ -30,4 +33,5 @@ setup(
     py_modules=['dateglob'],
     url='http://github.com/Yelp/dateglob',
     version=dateglob.__version__,
+    **setuptools_kwargs
 )
