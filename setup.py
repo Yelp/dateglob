@@ -5,7 +5,8 @@ try:
     setup  # shh, pyflakes
 
     setuptools_kwargs = {
-        'test_suite': 'tests'
+        'provides': ['dateglob'],
+        'test_suite': 'tests',
     }
 except ImportError:
     from distutils.core import setup
