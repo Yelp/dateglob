@@ -125,7 +125,7 @@ class TestStrftime(TestCase):
 
     def test_readme(self):
         # good test of a range of dates
-        dates = [date(2009, 12, 31) + timedelta(i) for i in xrange(1+365+31+1)]
+        dates = [date(2009, 12, 31) + timedelta(i) for i in range(1+365+31+1)]
         self.assertEqual(strftime(dates, '%Y-%m-%d'),
                      ['2009-12-31', '2010-*-*', '2011-01-*', '2011-02-01'])
 
