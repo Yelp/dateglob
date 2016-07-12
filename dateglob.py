@@ -29,6 +29,7 @@ import calendar
 from collections import defaultdict
 import datetime
 import re
+import six
 
 
 __author__ = 'David Marin <dave@yelp.com>'
@@ -37,7 +38,7 @@ __credits__ = [
     'Patrick Boocock <pboocock@jawbone.com>'
 ]
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 __all__ = ['strftime']
 
@@ -207,7 +208,7 @@ def extract_full_years(dates):
     full_years = set()
     other_dates = set()
 
-    for year, dates in year_to_dates.iteritems():
+    for year, dates in six.iteritems(year_to_dates):
         year_len = 365 + int(calendar.isleap(year))
         if len(dates) >= year_len:
             full_years.add(year)
@@ -231,7 +232,7 @@ def extract_full_months(dates):
     full_months = set()
     other_dates = set()
 
-    for (year, month), dates in month_to_dates.iteritems():
+    for (year, month), dates in six.iteritems(month_to_dates):
         month_len = calendar.monthrange(year, month)[1]
         if len(dates) >= month_len:
             full_months.add((year, month))
@@ -259,7 +260,7 @@ def extract_full_tens(dates):
     full_tens = set()
     other_dates = set()
 
-    for (year, month, ten), dates in ten_to_dates.iteritems():
+    for (year, month, ten), dates in six.iteritems(ten_to_dates):
         mr = calendar.monthrange(year, month)[1]
         if ten < 3 and len(dates) == TEN_LENGTH[ten]:
             full_tens.add((year, month, ten))

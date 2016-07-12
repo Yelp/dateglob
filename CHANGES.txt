@@ -1,3 +1,5 @@
+v0.3, 2016-07-11 -- Python 3.5 compatibility!
+
 v0.2, 2016-05-1* -- Ten-day period globs!
 
 v0.1, 2010-06-* -- Initial release!

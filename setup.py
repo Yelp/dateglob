@@ -1,5 +1,3 @@
-import dateglob
-
 try:
     from setuptools import setup
     setup  # shh, pyflakes
@@ -28,11 +26,12 @@ setup(
         'Topic :: Utilities',
     ],
     description='Convert a set of dates into a compact list of globs',
+    install_requires=['six'],
     license='Apache',
     long_description=open('README.rst').read(),
     name='dateglob',
     py_modules=['dateglob'],
     url='http://github.com/Yelp/dateglob',
-    version=dateglob.__version__,
+    version='0.3',
     **setuptools_kwargs
 )
