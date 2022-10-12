@@ -26,86 +26,84 @@ for command that take daily log files as input, for example:
 >>> args += dateglob.strftime(dates, '/logs/foo/%Y/%m/%d/*.gz')
 """
 import calendar
-from collections import defaultdict
 import datetime
 import re
+from collections import defaultdict
+
 import six
 
 
-__author__ = 'David Marin <dave@yelp.com>'
+__author__ = "David Marin <dave@yelp.com>"
 
-__credits__ = [
-    'Patrick Boocock <pboocock@jawbone.com>'
-]
+__credits__ = ["Patrick Boocock <pboocock@jawbone.com>"]
 
-__version__ = '0.3'
+__version__ = "0.3"
 
-__all__ = ['strftime']
+__all__ = ["strftime"]
 
 
 # match directives in a strftime format string (e.g. '%Y-%m-%d')
-STRFTIME_FIELD_RE = re.compile('%(.)')
+STRFTIME_FIELD_RE = re.compile("%(.)")
 
 # used to compact multiple adjacent wildcards into a single wildcard.
-MULTIPLE_WILDCARD_RE = re.compile(r'\*+')
+MULTIPLE_WILDCARD_RE = re.compile(r"\*+")
 
 # all fields handled by the default version of strftime; see
 # http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior
 
 # divisions smaller than a day and time zones; always converted to *
-TIME_FIELDS = 'fHIMpSXzZ'
+TIME_FIELDS = "fHIMpSXzZ"
 
-DAY_OF_WEEK_FIELDS = 'aAw'
+DAY_OF_WEEK_FIELDS = "aAw"
 
-DAY_OF_MONTH_FIELDS = 'd'
+DAY_OF_MONTH_FIELDS = "d"
 
-DAY_OF_YEAR_FIELDS = 'j'
+DAY_OF_YEAR_FIELDS = "j"
 
 # week number in year, with weeks starting on Sunday
-SUNDAY_WEEK_OF_YEAR_FIELDS = 'U'
+SUNDAY_WEEK_OF_YEAR_FIELDS = "U"
 
 # week number in year, with weeks starting on Monday
-MONDAY_WEEK_OF_YEAR_FIELDS = 'W'
+MONDAY_WEEK_OF_YEAR_FIELDS = "W"
 
 # month names and numbers
-MONTH_FIELDS = 'bBm'
+MONTH_FIELDS = "bBm"
 
-YEAR_FIELDS = 'yY'
+YEAR_FIELDS = "yY"
 
 # fields that describe the whole date at once (make globbing impossible)
-WHOLE_DATE_FIELDS = 'cx'
+WHOLE_DATE_FIELDS = "cx"
 
 # The "%%" format; always leave these alone
-LITERAL_FIELDS = '%'
+LITERAL_FIELDS = "%"
 
 # fields that can be replaced with * if we have all days in a year
-YEAR_GLOB_FIELDS = (TIME_FIELDS +
-                    DAY_OF_WEEK_FIELDS +
-                    DAY_OF_MONTH_FIELDS +
-                    DAY_OF_YEAR_FIELDS +
-                    SUNDAY_WEEK_OF_YEAR_FIELDS +
-                    MONDAY_WEEK_OF_YEAR_FIELDS +
-                    MONTH_FIELDS)
+YEAR_GLOB_FIELDS = (
+    TIME_FIELDS
+    + DAY_OF_WEEK_FIELDS
+    + DAY_OF_MONTH_FIELDS
+    + DAY_OF_YEAR_FIELDS
+    + SUNDAY_WEEK_OF_YEAR_FIELDS
+    + MONDAY_WEEK_OF_YEAR_FIELDS
+    + MONTH_FIELDS
+)
 
 # fields that preclude globbing even if we have all days in a year
 YEAR_BAD_FIELDS = WHOLE_DATE_FIELDS
 
 # fields that can be replaced with * if we have all days in a month
-MONTH_GLOB_FIELDS = (TIME_FIELDS +
-                     DAY_OF_MONTH_FIELDS)
+MONTH_GLOB_FIELDS = TIME_FIELDS + DAY_OF_MONTH_FIELDS
 
 # fields that preclude globbing even if we have all days in a month
-MONTH_BAD_FIELDS = (WHOLE_DATE_FIELDS +
-                     DAY_OF_YEAR_FIELDS +
-                     DAY_OF_WEEK_FIELDS +
-                     SUNDAY_WEEK_OF_YEAR_FIELDS +
-                     MONDAY_WEEK_OF_YEAR_FIELDS)
+MONTH_BAD_FIELDS = (
+    WHOLE_DATE_FIELDS
+    + DAY_OF_YEAR_FIELDS
+    + DAY_OF_WEEK_FIELDS
+    + SUNDAY_WEEK_OF_YEAR_FIELDS
+    + MONDAY_WEEK_OF_YEAR_FIELDS
+)
 
-TEN_LENGTH = {
-    0: 9,
-    1: 10,
-    2: 10
-}
+TEN_LENGTH = {0: 9, 1: 10, 2: 10}
 
 
 def strftime(dates, format):
@@ -127,7 +125,7 @@ def strftime(dates, format):
     # handle special cases quickly
     if not dates:
         return []
-    elif not '%' in format:
+    elif not "%" in format:
         # don't use STRFTIME_FIELD_RE to check because we want to catch
         # malformed format strings as well.
         return [format]
@@ -176,7 +174,7 @@ def has_fields(format, fields):
     return bool(set(STRFTIME_FIELD_RE.findall(format)) & set(fields))
 
 
-def glob_fields(format, fields, day_str=''):
+def glob_fields(format, fields, day_str=""):
     """Replace fields in a format string with ``*``. Adjacent stars (`**`)
     will be merged into a single star.
 
@@ -188,9 +186,9 @@ def glob_fields(format, fields, day_str=''):
     :rtype: bool
     """
     format = STRFTIME_FIELD_RE.sub(
-        lambda m: '%s*' % day_str if m.group(1) in fields else m.group(0),
-        format)
-    format = MULTIPLE_WILDCARD_RE.sub('*', format)
+        lambda m: "%s*" % day_str if m.group(1) in fields else m.group(0), format
+    )
+    format = MULTIPLE_WILDCARD_RE.sub("*", format)
     return format
 
 
@@ -208,7 +206,7 @@ def extract_full_years(dates):
     full_years = set()
     other_dates = set()
 
-    for year, dates in six.iteritems(year_to_dates):
+    for year, dates in year_to_dates.items():
         year_len = 365 + int(calendar.isleap(year))
         if len(dates) >= year_len:
             full_years.add(year)
@@ -232,7 +230,7 @@ def extract_full_months(dates):
     full_months = set()
     other_dates = set()
 
-    for (year, month), dates in six.iteritems(month_to_dates):
+    for (year, month), dates in month_to_dates.items():
         month_len = calendar.monthrange(year, month)[1]
         if len(dates) >= month_len:
             full_months.add((year, month))
@@ -260,7 +258,7 @@ def extract_full_tens(dates):
     full_tens = set()
     other_dates = set()
 
-    for (year, month, ten), dates in six.iteritems(ten_to_dates):
+    for (year, month, ten), dates in ten_to_dates.items():
         mr = calendar.monthrange(year, month)[1]
         if ten < 3 and len(dates) == TEN_LENGTH[ten]:
             full_tens.add((year, month, ten))
@@ -283,7 +281,7 @@ def which_ten(d):
     :return: an integer that is the prefix of the relevant ten-day period.
     """
     if not calendar.monthrange(d.year, d.month)[1] >= d.day > 0:
-        raise RuntimeError('Out of range date')
+        raise RuntimeError("Out of range date")
 
     if d.day < 10:
         return 0
