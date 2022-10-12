@@ -164,6 +164,3 @@ class TestStrftime(TestCase):
 
         # don't incorrectly grab % out of %% to do globbing
         self.assertEqual(strftime(y(2011), '%m %%m %%%m'), ['* %m %*'])
-
-        # catch invalid strftime string
-        self.assertRaises(ValueError, strftime, y(2011), '110%')
