@@ -30,8 +30,6 @@ import datetime
 import re
 from collections import defaultdict
 
-import six
-
 
 __author__ = "David Marin <dave@yelp.com>"
 
@@ -119,13 +117,16 @@ def strftime(dates, format):
     ten-day periods (we don't glob weeks).
 
     :param dates: a sequence of :py:class:`datetime.date` objects
-    :param format: a :py:func:`~datetime.date.strftime` format string (see http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior)
-    :return: a list of strings corresponding to strftime-formatted dates, using ``*`` wherever possible. These will be distinct (no duplicates) and in alphabetical order.
+    :param format: a :py:func:`~datetime.date.strftime` format string (see
+        http://docs.python.org/library/datetime.html#strftime-and-strptime-behavior)
+    :return: a list of strings corresponding to strftime-formatted dates, using
+        ``*`` wherever possible. These will be distinct (no duplicates) and in
+        alphabetical order.
     """
     # handle special cases quickly
     if not dates:
         return []
-    elif not "%" in format:
+    elif "%" not in format:
         # don't use STRFTIME_FIELD_RE to check because we want to catch
         # malformed format strings as well.
         return [format]
