@@ -29,7 +29,7 @@ setup(
     ],
     python_requires=">=3.7",
     description="Convert a set of dates into a compact list of globs",
-    install_requires=["six"],
+    install_requires=[],
     license="Apache",
     long_description=open("README.rst").read(),
     name="dateglob",
