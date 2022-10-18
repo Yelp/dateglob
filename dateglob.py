@@ -25,10 +25,13 @@ for command that take daily log files as input, for example:
 
 >>> args += dateglob.strftime(dates, '/logs/foo/%Y/%m/%d/*.gz')
 """
+from __future__ import annotations
+
 import calendar
 import datetime
 import re
 from collections import defaultdict
+from typing import Sequence
 
 
 __author__ = "David Marin <dave@yelp.com>"
@@ -104,7 +107,7 @@ MONTH_BAD_FIELDS = (
 TEN_LENGTH = {0: 9, 1: 10, 2: 10}
 
 
-def strftime(dates, format):
+def strftime(dates: Sequence[datetime.date], format: str) -> list[str]:
     """Format a sequence of dates, using ``*`` when possible.
 
     For example, if *dates* contains all days in June 2011, and
@@ -165,7 +168,7 @@ def strftime(dates, format):
     return sorted(results)
 
 
-def has_fields(format, fields):
+def has_fields(format: str, fields: str) -> bool:
     """Check a format string for fields of a given type.
     :param format: a :py:func:`~datetime.date.strftime` format string
     :type fields: str
@@ -175,7 +178,7 @@ def has_fields(format, fields):
     return bool(set(STRFTIME_FIELD_RE.findall(format)) & set(fields))
 
 
-def glob_fields(format, fields, day_str=""):
+def glob_fields(format: str, fields: str, day_str: str = "") -> str:
     """Replace fields in a format string with ``*``. Adjacent stars (`**`)
     will be merged into a single star.
 
@@ -193,7 +196,9 @@ def glob_fields(format, fields, day_str=""):
     return format
 
 
-def extract_full_years(dates):
+def extract_full_years(
+    dates: Sequence[datetime.date],
+) -> tuple[list[int], list[datetime.date]]:
     """Find if there are any years where every day of the year is in *dates*.
 
     Returns ``full_years, other_dates``: *years* is a list of year
@@ -205,19 +210,21 @@ def extract_full_years(dates):
         year_to_dates[d.year].add(d)
 
     full_years = set()
-    other_dates = set()
+    other_dates: set[datetime.date] = set()
 
-    for year, dates in year_to_dates.items():
+    for year, date_set in year_to_dates.items():
         year_len = 365 + int(calendar.isleap(year))
-        if len(dates) >= year_len:
+        if len(date_set) >= year_len:
             full_years.add(year)
         else:
-            other_dates.update(dates)
+            other_dates.update(date_set)
 
     return sorted(full_years), sorted(other_dates)
 
 
-def extract_full_months(dates):
+def extract_full_months(
+    dates: Sequence[datetime.date],
+) -> tuple[list[tuple[int, int]], list[datetime.date]]:
     """Find if there are any years where every day of the year is in *dates*.
 
     Returns ``full_months, other_dates``: *months* is a list of tuples
@@ -231,17 +238,19 @@ def extract_full_months(dates):
     full_months = set()
     other_dates = set()
 
-    for (year, month), dates in month_to_dates.items():
+    for (year, month), date_set in month_to_dates.items():
         month_len = calendar.monthrange(year, month)[1]
-        if len(dates) >= month_len:
+        if len(date_set) >= month_len:
             full_months.add((year, month))
         else:
-            other_dates.update(dates)
+            other_dates.update(date_set)
 
     return sorted(full_months), sorted(other_dates)
 
 
-def extract_full_tens(dates):
+def extract_full_tens(
+    dates: Sequence[datetime.date],
+) -> tuple[list[tuple[int, int, int]], list[datetime.date]]:
     """
     Find if there are any series of dates containing a full range of ten
     dates in *dates*, e.g. 2016-01-0* 2016-01-1* 2016-01-2* 2016-01-3*.
@@ -259,21 +268,23 @@ def extract_full_tens(dates):
     full_tens = set()
     other_dates = set()
 
-    for (year, month, ten), dates in ten_to_dates.items():
+    for (year, month, ten), date_set in ten_to_dates.items():
         mr = calendar.monthrange(year, month)[1]
-        if ten < 3 and len(dates) == TEN_LENGTH[ten]:
+        if ten < 3 and len(date_set) == TEN_LENGTH[ten]:
             full_tens.add((year, month, ten))
-        elif ten == 3 and len(dates) == mr - 30 + 1:  # Handle 30+ days
+        elif ten == 3 and len(date_set) == mr - 30 + 1:  # Handle 30+ days
             full_tens.add((year, month, ten))
-        elif month == 2 and ten == 2 and len(dates) == mr - 20 + 1:  # Handle February
+        elif (
+            month == 2 and ten == 2 and len(date_set) == mr - 20 + 1
+        ):  # Handle February
             full_tens.add((year, month, ten))
         else:
-            other_dates.update(dates)
+            other_dates.update(date_set)
 
     return sorted(full_tens), sorted(other_dates)
 
 
-def which_ten(d):
+def which_ten(d: datetime.date) -> int:
     """
     Determine which ten-day period a date falls in.
 
