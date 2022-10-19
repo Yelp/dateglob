@@ -35,7 +35,7 @@ setup(
     name="dateglob",
     py_modules=["dateglob"],
     url="http://github.com/Yelp/dateglob",
-    version="1.0.0",
+    version="1.1.0",
     package_data={
         "dateglob": ["py.typed"],
     },
