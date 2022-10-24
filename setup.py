@@ -24,7 +24,7 @@ setup(
     long_description=open("README.rst").read(),
     name="dateglob",
     url="http://github.com/Yelp/dateglob",
-    version="1.1.0",
+    version="1.1.1",
     package_data={
         "dateglob": ["py.typed"],
     },
